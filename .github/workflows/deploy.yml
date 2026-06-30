@@ -18,14 +18,7 @@ jobs:
           docker build -t custom-nginx:latest .
 
       - name: Deploy to Minikube
-        run: |
-          kubectl create deployment custom-nginx --image=custom-nginx:latest --image-pull-policy=Never || \
-          kubectl set image deployment/custom-nginx custom-nginx=custom-nginx:latest
-
-      - name: Expose service
-        run: |
-          kubectl expose deployment custom-nginx --port=80 --type=NodePort || echo "Service already exists"
+        run: kubectl apply -f nginx-deployment.yaml
 
       - name: Get service URL
-        run: |
-          minikube service custom-nginx --url
+        run: minikube service custom-nginx --url
