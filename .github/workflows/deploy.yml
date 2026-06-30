@@ -1,0 +1,31 @@
+name: Build and Deploy Nginx to Minikube
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          eval $(minikube docker-env)
+          docker build -t custom-nginx:latest .
+
+      - name: Deploy to Minikube
+        run: |
+          kubectl create deployment custom-nginx --image=custom-nginx:latest --image-pull-policy=Never || \
+          kubectl set image deployment/custom-nginx custom-nginx=custom-nginx:latest
+
+      - name: Expose service
+        run: |
+          kubectl expose deployment custom-nginx --port=80 --type=NodePort || echo "Service already exists"
+
+      - name: Get service URL
+        run: |
+          minikube service custom-nginx --url
